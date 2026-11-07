@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
+<title>Hermes</title>
+<link rel="manifest" href="/manifest.json">
+<link rel="apple-touch-icon" href="/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0b0d12">
+<link rel="stylesheet" href="/style.css?v=10">
+</head>
+<body>
+<!-- Texts are English; [data-t], placeholder and aria-label are translated by app.js (TR). -->
+
+<!-- Login -->
+<section id="login" class="login">
+  <div class="login-card">
+    <div class="logo">H</div>
+    <h1>Hermes</h1>
+    <p data-t>Enter your token. It stays on this device, you won't be asked again.</p>
+    <form id="login-form">
+      <input id="token" type="password" placeholder="APP_TOKEN" autocomplete="off"
+             autocapitalize="off" autocorrect="off" spellcheck="false" required>
+      <button class="primary" type="submit" data-t>Log in</button>
+    </form>
+    <p id="login-err" class="error hidden"></p>
+  </div>
+</section>
+
+<!-- App -->
+<div id="app" class="app hidden">
+  <header class="top">
+    <h1 id="title">Chat</h1>
+    <button id="model-pill" class="pill hidden"></button>
+    <button id="top-action" class="ghost hidden"></button>
+  </header>
+
+  <!-- Pending approvals: on top of every tab -->
+  <div id="approvals" class="approvals hidden"></div>
+
+  <main>
+    <!-- Chat -->
+    <section id="tab-chat" class="tab">
+      <div id="messages" class="thread">
+        <div class="empty" id="chat-empty">
+          <div class="empty-ico"><svg viewBox="0 0 24 24"><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1"/></svg></div>
+          <b data-t>Hello</b>
+          <span data-t>Talk to Hermes: set reminders, search the web, plan things. It uses the model you connected.</span>
+          <div class="chips">
+            <button data-t data-say="What reminders do I have?">My reminders</button>
+            <button data-t data-say="Remind me to drink water in 10 minutes.">Water in 10 min</button>
+          </div>
+        </div>
+      </div>
+      <form id="chat-form" class="composer">
+        <textarea id="input" rows="1" placeholder="Message" enterkeyhint="send"></textarea>
+        <button class="send" type="submit" aria-label="Send"><svg viewBox="0 0 24 24"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button>
+      </form>
+    </section>
+
+    <!-- Dev: Hermes tasks on REPO_DIR -->
+    <section id="tab-dev" class="tab hidden">
+      <div class="segmented" role="tablist">
+        <button data-seg="agent" class="on">Hermes</button>
+        <button data-seg="status" data-t>Status</button>
+      </div>
+
+      <div id="seg-agent" class="seg">
+        <div id="hermes-state" class="banner hidden"></div>
+        <div id="tasks" class="thread">
+          <div class="empty">
+            <div class="empty-ico"><svg viewBox="0 0 24 24"><path d="m8 7-5 5 5 5M16 7l5 5-5 5M13.5 4l-3 16"/></svg></div>
+            <b>Hermes</b>
+            <span data-t>Writes code, fixes bugs, runs tests in your repo. Give it a task, you get a notification when it's done.</span>
+            <div class="chips">
+              <button data-t data-task="Run the tests and summarize the result.">Summarize tests</button>
+              <button data-t data-task="Explain what this repo does in a few lines.">Explain the repo</button>
+            </div>
+          </div>
+        </div>
+        <form id="task-form" class="composer">
+          <textarea id="task-input" rows="1" placeholder="Give Hermes a task" enterkeyhint="send"></textarea>
+          <button class="send" type="submit" aria-label="Send"><svg viewBox="0 0 24 24"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button>
+        </form>
+      </div>
+
+      <div id="seg-status" class="seg scroll hidden">
+        <div class="card">
+          <div class="card-head"><h2 data-t>Repo changes</h2><button id="show-diff" class="small">Diff</button></div>
+          <pre id="dev-changes" class="mono muted">-</pre>
+          <pre id="dev-diff" class="mono diff hidden"></pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- Settings: model, (optional) PC, app -->
+    <section id="tab-pc" class="tab scroll hidden">
+      <div class="card">
+        <div class="card-head"><h2>Model</h2><span id="model-now" class="muted small-text"></span></div>
+        <form id="model-form" class="form">
+          <select id="m-provider" aria-label="Provider"></select>
+          <input id="m-model" placeholder="Model name" aria-label="Model name" required
+                 autocapitalize="off" autocorrect="off" spellcheck="false">
+          <input id="m-base" class="hidden" placeholder="https://api.groq.com/openai/v1" aria-label="URL"
+                 autocapitalize="off" autocorrect="off" spellcheck="false">
+          <input id="m-key" type="password" placeholder="API key" aria-label="API key"
+                 autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false">
+          <button class="primary" type="submit" data-t>Save</button>
+        </form>
+        <p class="hint" data-t>Chat, reminders and Dev all use this model. The key is stored in Hermes on the server and never shown again.</p>
+      </div>
+      <!-- PC control: only when the server runs on a PC (PC_CONTROL) -->
+      <div id="pc-section" class="seg-gap hidden">
+      <div class="card">
+        <div class="card-head"><h2 data-t>PC status</h2><button id="refresh-pc" class="small" data-t>Refresh</button></div>
+        <div id="pc" class="stats">-</div>
+      </div>
+      <div class="card">
+        <div class="card-head"><h2 data-t>Power</h2></div>
+        <div class="btn-row">
+          <button data-action="sleep_pc" data-t>Sleep</button>
+          <button data-action="shutdown_pc" class="danger" data-t>Shut down</button>
+          <button id="cancel-shutdown" data-t>Cancel</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-head"><h2 data-t>Files</h2><span class="muted small-text" data-t>Downloads</span></div>
+        <div id="files" class="muted">-</div>
+      </div>
+      </div>
+      <div class="card">
+        <div class="card-head"><h2 data-t>App</h2></div>
+        <div class="btn-row">
+          <button id="bell" data-t>Enable notifications</button>
+          <button id="lang"></button>
+          <button id="logout" class="danger" data-t>Log out</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <nav class="tabbar">
+    <button data-tab="chat" class="on">
+      <svg viewBox="0 0 24 24"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12Z"/></svg>
+      <span data-t>Chat</span>
+    </button>
+    <button data-tab="dev">
+      <svg viewBox="0 0 24 24"><path d="m8 7-5 5 5 5M16 7l5 5-5 5M13.5 4l-3 16"/></svg>
+      <span data-t>Dev</span><i id="dev-dot" class="dot hidden"></i>
+    </button>
+    <button data-tab="pc">
+      <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg>
+      <span data-t>Settings</span>
+    </button>
+  </nav>
+</div>
+
+<div id="toast" class="toast hidden"></div>
+
+<script src="/app.js?v=14"></script>
+</body>
+</html>
